@@ -1,0 +1,87 @@
+{
+    "type": "Settings",
+    "audio": {
+        "input": {
+            "encoding": "mulaw",
+            "sample_rate": 8000
+        },
+        "output": {
+            "encoding": "mulaw",
+            "sample_rate": 8000,
+            "container": "none"
+        }
+    },
+    "agent": {
+        "language": "en",
+        "listen": {
+            "provider": {
+                "type": "deepgram",
+                "model": "nova-3",
+                "keyterms": ["menu", "order", "reservation"]
+            }
+        },
+        "think": {
+            "provider": {
+                "type": "open_ai",
+                "model": "gpt-4o-mini",
+                "temperature": 0.7
+            },
+            "prompt": "You are a professional restaurant assistant for a pure vegetarian Indian Gujarati restaurant. You can: 1) Get menu info with get_menu_info, 2) Place food orders with place_order, 3) Look up existing orders or reservations with lookup_order. IMPORTANT: Always ask customers to clearly spell out their full name when placing an order or making a reservation. Before confirming, always repeat the details and verify: Customer’s full name, Items ordered (for example, 'two thali meals and one extra roti'), and Quantity. Be polite, patient, and thorough. If a name is unclear, ask the customer to spell it letter by letter. Confirm all order details before finalizing any transaction.",
+            "functions": [
+              {
+                "name": "get_menu_info",
+                "description": "Get detailed information about a specific menu item. Use this function when: A customer asks about dishes, ingredients, or prices. A customer wants to know what is included in a thali or how spicy a dish is. A customer asks questions like 'What is undhiyu?' or 'Tell me about Gujarati thali'. Always provide helpful information about the dish’s description, ingredients, and price.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "dish_name": {
+                      "type": "string",
+                      "description": "Name of the dish to look up. Convert to lowercase for matching. Examples: 'undhiyu', 'khichdi', 'dal dhokli', 'fafda jalebi'"
+                    }
+                  },
+                  "required": ["dish_name"]
+                }
+              },
+              {
+                "name": "place_order",
+                "description": "Place a new food order for a customer. Use this function when: A customer wants to order food for dine-in, takeaway, or delivery. A customer says 'I want to order' or 'Can I get'. Before placing an order: Verify the dish exists using get_menu_info. Get the customer's full name for the order. Always confirm the dish name, quantity, and any special requests before processing.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "customer_name": {
+                      "type": "string",
+                      "description": "Customer's full name for the order. Use as provided by the customer."
+                    },
+                    "dish_name": {
+                      "type": "string",
+                      "description": "Name of the dish to order. Convert to lowercase for matching. Must be a valid dish in the menu. Examples: 'thepla', 'handvo', 'khichu', 'shrikhanda', 'roti'"
+                    }
+                  },
+                  "required": ["customer_name", "dish_name"]
+                }
+              },
+              {
+                "name": "lookup_order",
+                "description": "Look up an existing food order or table reservation by its ID. Use this function when: A customer asks about an order or reservation status. A customer says 'Where is my order' or 'Check my booking'. Always verify the order or reservation exists and provide clear information about the details.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "order_id": {
+                      "type": "integer",
+                      "description": "The order or reservation ID number to look up. Must be a valid ID in the system."
+                    }
+                  },
+                  "required": ["order_id"]
+                }
+              }
+            ]
+        },
+        "speak": {
+            "provider": {
+                "type": "deepgram",
+                "model": "aura-2-thalia-en"
+            }
+        },
+        "greeting": "Namaste! Welcome to our Gujarati restaurant. I can help you with menu information, placing food orders, and checking your order or reservation status. When placing orders, please spell out your full name clearly and I’ll confirm all details with you. What would you like to do today?"
+    }
+}
